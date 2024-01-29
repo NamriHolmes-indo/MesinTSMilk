@@ -7,20 +7,47 @@
 #include "lcd.h"
 #include "logo.h"
 #include "DrawingFunctions.h"
+#include <stdbool.h>
+
+bool tombolKiriSebelumnyaDitekan = false;
+bool tombolKananSebelumnyaDitekan = false;
 
 ADC_HandleTypeDef hadc1;
 CRC_HandleTypeDef hcrc;
 TIM_HandleTypeDef htim1;
-UART_HandleTypeDef huart1;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
-static void MX_USART1_UART_Init(void);
+
+#define TombolKiri_Pin   GPIO_PIN_8
+#define TombolKanan_Pin  GPIO_PIN_9
+#define Tombol_Port      GPIOA
 
 uint32_t ID;
+
+void Button_Init(void) {
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = TombolKiri_Pin | TombolKanan_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(Tombol_Port, &GPIO_InitStruct);
+}
+
+uint8_t ReadTombolKiri(void) {
+    return HAL_GPIO_ReadPin(Tombol_Port, TombolKiri_Pin) == GPIO_PIN_RESET;
+}
+
+uint8_t ReadTombolKanan(void) {
+    return HAL_GPIO_ReadPin(Tombol_Port, TombolKanan_Pin) == GPIO_PIN_RESET;
+}
+
+int stateHalaman = 0;
 
 int main(void)
 {
@@ -31,8 +58,12 @@ int main(void)
   MX_ADC1_Init();
   MX_CRC_Init();
   MX_TIM1_Init();
-  MX_USART1_UART_Init();
   HAL_InitTick(0);
+  Button_Init();
+
+  uint8_t tombolKiriStatus, tombolKananStatus;
+  uint8_t tombolKiriSebelumnyaDitekan = 0;
+  uint8_t tombolKananSebelumnyaDitekan = 0;
 
   HAL_TIM_Base_Start(&htim1);
   ID = readID();
@@ -41,13 +72,53 @@ int main(void)
   tft_init (ID);
   setRotation(1);
   fillScreen(WHITE);
-
-  drawRGBBitmap(0, 0, image_data_logo2, 320, 240);
+  SplashScreen();
 
   while (1)
   {
+      tombolKiriStatus = ReadTombolKiri();
+      tombolKananStatus = ReadTombolKanan();
+      tombolKananStatus = ReadTombolKanan();
+
+      if (tombolKananStatus && !tombolKananSebelumnyaDitekan) {
+          fillScreen(BLACK);
+          stateHalaman = stateHalaman+1;
+
+          if(stateHalaman>2){
+        	  stateHalaman = 0;
+          }
+          tombolKananSebelumnyaDitekan = 1;
+          tombolKiriSebelumnyaDitekan = 0;
+      }
+      else if (tombolKananStatus) {
+          tombolKananSebelumnyaDitekan = 0;
+      }
+
+      if (tombolKiriStatus && !tombolKiriSebelumnyaDitekan) {
+          fillScreen(BLACK);
+          SplashScreen();
+          tombolKiriSebelumnyaDitekan = 1;
+          tombolKananSebelumnyaDitekan = 0;
+      }
+      else if (tombolKiriStatus) {
+          tombolKiriSebelumnyaDitekan = 0;
+      }
+
+      if(stateHalaman == 0){
+    	  menuUtama();
+      }else if(stateHalaman == 1){
+    	  statusDevice();
+      }else if(stateHalaman == 2){
+    	  info();
+      }
 
   }
+}
+
+void SplashScreen(){
+	drawRGBBitmap(0, 0, image_data_logo2, 320, 240);
+	HAL_Delay(5000);
+	fillScreen(BLACK);
 }
 
 void menuUtama(){
@@ -62,6 +133,35 @@ void menuUtama(){
 	printnewtstr(10, 220, WHITE, &mono9x7, 1, "Support By:");
 	printnewtstr(10, 235, WHITE, &mono9x7, 1, "Ngonsul-IT");
 	printnewtstr(170, 235, BLUE, &mono9x7bold, 1, "Status>>");
+}
+
+void statusDevice(){
+	printnewtstr(10, 25, RED, &mono18x7bold, 1, "Mesin TSMilk");
+	printnewtstr(10, 55, BLUE, &mono12x7bold, 1, "Status Mesin:");
+
+	uint8_t suhu = 95;
+	if(suhu <= 75){
+		printnewtstr(10, 95, RED, &mono12x7bold, 1, "Belum Siap");
+	}else{
+		printnewtstr(10, 95, GREEN, &mono12x7bold, 1, "Siap");
+		printnewtstr(10, 135, BLUE, &mono9x7bold, 1, "OK Untuk Start");
+	}
+
+	printnewtstr(10, 205, GREEN, &mono9x7, 1, "Versi 1.0.0");
+	printnewtstr(10, 220, WHITE, &mono9x7, 1, "Support By:");
+	printnewtstr(10, 235, WHITE, &mono9x7, 1, "Ngonsul-IT");
+	printnewtstr(170, 235, BLUE, &mono9x7bold, 1, "Info>>");
+}
+
+void info(){
+	printnewtstr(10, 25, RED, &mono18x7bold, 1, "Mesin TSMilk");
+	printnewtstr(10, 55, BLUE, &mono12x7bold, 1, "Versi Mesin: 1.0.0");
+	printnewtstr(10, 85, BLUE, &mono12x7bold, 1, "Afiliasi:");
+	printnewtstr(10, 105, BLUE, &mono9x7bold, 1, "1.Innovillage");
+	printnewtstr(10, 125, BLUE, &mono9x7bold, 1, "2.Telkom University");
+	printnewtstr(10, 145, BLUE, &mono9x7bold, 1, "3.Ngonsul-IT");
+	printnewtstr(10, 175, BLUE, &mono9x7bold, 1, "Temukan Website di:");
+	printnewtstr(10, 200, WHITE, &mono9x7bold, 1, "www.ngonsul.com");
 }
 
 void SystemClock_Config(void)
@@ -231,39 +331,6 @@ static void MX_TIM1_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -296,11 +363,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_RD_Pin */
-  GPIO_InitStruct.Pin = LCD_RD_Pin;
+  /*Configure GPIO pins : LCD_RD_Pin TombolKanan_Pin TombolKiri_Pin */
+  GPIO_InitStruct.Pin = LCD_RD_Pin|TombolKanan_Pin|TombolKiri_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(LCD_RD_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LCD_D0_Pin LCD_D1_Pin PWM_Pin LCD_D3_Pin
                            LCD_D4_Pin LCD_D5_Pin LCD_D6_Pin */

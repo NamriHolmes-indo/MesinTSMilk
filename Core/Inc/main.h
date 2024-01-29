@@ -77,6 +77,10 @@ void Error_Handler(void);
 #define LCD_D1_GPIO_Port GPIOB
 #define PWM_Pin GPIO_PIN_12
 #define PWM_GPIO_Port GPIOB
+#define TombolKanan_Pin GPIO_PIN_8
+#define TombolKanan_GPIO_Port GPIOA
+#define TombolKiri_Pin GPIO_PIN_9
+#define TombolKiri_GPIO_Port GPIOA
 #define LCD_D2_Pin GPIO_PIN_15
 #define LCD_D2_GPIO_Port GPIOA
 #define LCD_D3_Pin GPIO_PIN_3

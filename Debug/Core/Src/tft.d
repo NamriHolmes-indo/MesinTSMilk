@@ -30,7 +30,6 @@ Core/Src/tft.o: ../Core/Src/tft.c ../Core/Inc/tft.h ../Core/Inc/fonts.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/functions.h ../Core/Inc/user_setting.h
 ../Core/Inc/tft.h:
 ../Core/Inc/fonts.h:
@@ -65,6 +64,5 @@ Core/Src/tft.o: ../Core/Src/tft.c ../Core/Inc/tft.h ../Core/Inc/fonts.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 ../Core/Inc/functions.h:
 ../Core/Inc/user_setting.h:
