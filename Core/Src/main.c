@@ -26,6 +26,12 @@ static void MX_CRC_Init(void);
 #define TombolKanan_Pin  GPIO_PIN_9
 #define Tombol_Port      GPIOA
 
+#define RL1 GPIO_PIN_12
+#define RL2 GPIO_PIN_13
+#define RL3 GPIO_PIN_14
+#define RL4 GPIO_PIN_15
+#define RL_Port GPIOB
+
 uint32_t ID;
 
 void Button_Init(void) {
@@ -117,6 +123,8 @@ int main(void)
 
 void SplashScreen(){
 	drawRGBBitmap(0, 0, image_data_logo2, 320, 240);
+	fanPemanasOn();
+	fanMicOn();
 	HAL_Delay(5000);
 	fillScreen(BLACK);
 }
@@ -133,6 +141,7 @@ void menuUtama(){
 	printnewtstr(10, 220, WHITE, &mono9x7, 1, "Support By:");
 	printnewtstr(10, 235, WHITE, &mono9x7, 1, "Ngonsul-IT");
 	printnewtstr(170, 235, BLUE, &mono9x7bold, 1, "Status>>");
+	fanMicOff();
 }
 
 void statusDevice(){
@@ -151,9 +160,11 @@ void statusDevice(){
 	printnewtstr(10, 220, WHITE, &mono9x7, 1, "Support By:");
 	printnewtstr(10, 235, WHITE, &mono9x7, 1, "Ngonsul-IT");
 	printnewtstr(170, 235, BLUE, &mono9x7bold, 1, "Info>>");
+	fanPemanasOff();
 }
 
 void info(){
+	PumAOn();
 	printnewtstr(10, 25, RED, &mono18x7bold, 1, "Mesin TSMilk");
 	printnewtstr(10, 55, BLUE, &mono12x7bold, 1, "Versi Mesin: 1.0.0");
 	printnewtstr(10, 85, BLUE, &mono12x7bold, 1, "Afiliasi:");
@@ -162,6 +173,32 @@ void info(){
 	printnewtstr(10, 145, BLUE, &mono9x7bold, 1, "3.Ngonsul-IT");
 	printnewtstr(10, 175, BLUE, &mono9x7bold, 1, "Temukan Website di:");
 	printnewtstr(10, 200, WHITE, &mono9x7bold, 1, "www.ngonsul.com");
+	PumBOn();
+}
+
+void fanPemanasOn(){
+	HAL_GPIO_WritePin(RL_Port, RL1, 1);
+}
+void fanPemanasOff(){
+	HAL_GPIO_WritePin(RL_Port, RL1, 0);
+}
+void PumAOn(){
+	HAL_GPIO_WritePin(RL_Port, RL2, 1);
+}
+void PumAOff(){
+	HAL_GPIO_WritePin(RL_Port, RL2, 0);
+}
+void PumBOn(){
+	HAL_GPIO_WritePin(RL_Port, RL3, 1);
+}
+void PumBOff(){
+	HAL_GPIO_WritePin(RL_Port, RL3, 0);
+}
+void fanMicOn(){
+	HAL_GPIO_WritePin(RL_Port, RL4, 1);
+}
+void fanMicOff(){
+	HAL_GPIO_WritePin(RL_Port, RL4, 0);
 }
 
 void SystemClock_Config(void)
@@ -348,16 +385,17 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LCD_RST_Pin|LCD_CS_Pin|LCD_RS_Pin|LCD_WR_Pin
-                          |LCD_D7_Pin|LCD_D2_Pin, GPIO_PIN_RESET);
+                          |LCD_D7_Pin|PWM_Pin|LCD_D2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LCD_D0_Pin|LCD_D1_Pin|PWM_Pin|LCD_D3_Pin
-                          |LCD_D4_Pin|LCD_D5_Pin|LCD_D6_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LCD_D0_Pin|LCD_D1_Pin|RL1_Pin|RL2_Pin
+                          |RL3_Pin|RL4_Pin|LCD_D3_Pin|LCD_D4_Pin
+                          |LCD_D5_Pin|LCD_D6_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : LCD_RST_Pin LCD_CS_Pin LCD_RS_Pin LCD_WR_Pin
-                           LCD_D7_Pin LCD_D2_Pin */
+                           LCD_D7_Pin PWM_Pin LCD_D2_Pin */
   GPIO_InitStruct.Pin = LCD_RST_Pin|LCD_CS_Pin|LCD_RS_Pin|LCD_WR_Pin
-                          |LCD_D7_Pin|LCD_D2_Pin;
+                          |LCD_D7_Pin|PWM_Pin|LCD_D2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -369,10 +407,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LCD_D0_Pin LCD_D1_Pin PWM_Pin LCD_D3_Pin
-                           LCD_D4_Pin LCD_D5_Pin LCD_D6_Pin */
-  GPIO_InitStruct.Pin = LCD_D0_Pin|LCD_D1_Pin|PWM_Pin|LCD_D3_Pin
-                          |LCD_D4_Pin|LCD_D5_Pin|LCD_D6_Pin;
+  /*Configure GPIO pins : LCD_D0_Pin LCD_D1_Pin RL1_Pin RL2_Pin
+                           RL3_Pin RL4_Pin LCD_D3_Pin LCD_D4_Pin
+                           LCD_D5_Pin LCD_D6_Pin */
+  GPIO_InitStruct.Pin = LCD_D0_Pin|LCD_D1_Pin|RL1_Pin|RL2_Pin
+                          |RL3_Pin|RL4_Pin|LCD_D3_Pin|LCD_D4_Pin
+                          |LCD_D5_Pin|LCD_D6_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
